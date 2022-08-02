@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.mvpstopwatch.MyService;
 import com.example.mvpstopwatch.Presenter.Contract;
 import com.example.mvpstopwatch.Presenter.MainPresenter;
 import com.example.mvpstopwatch.R;
@@ -107,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         // 스레드를 생성해서 실행함
         timeThread = new Thread(new TimeThread());
         timeThread.start();
+
+        Intent intent = new Intent(MainActivity.this, MyService.class);
+        startService(intent);
         isRunning = true; // 실행중인가? -> Yes
         mainButtonCount++; // 버튼을 누른 상태 1
     }
@@ -140,8 +146,8 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         public void handleMessage(@NonNull Message msg) {
             int mSec = msg.arg1 % 100;
             int sec = (msg.arg1 / 100) % 60;
-            int min = (msg.arg1 / 100) / 60;
-            int hour = (msg.arg1 / 3600) / 60;
+            int min = (msg.arg1 / 100) / 60 % 60;
+            int hour = (msg.arg1 / 100) / 3600 % 24;
 
             String result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
             timeTv.setText(result);
