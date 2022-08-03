@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,13 +26,15 @@ import org.w3c.dom.Text;
 
 //View
 public class MainActivity extends AppCompatActivity implements Contract.View {
-    TextView timeTv, recordsTv;
+    private static final String TAG = "MainActivity";
+
+    public static TextView timeTv;
+    TextView recordsTv;
     Button subBtn, mainBtn;
     ScrollView scrollView;
 
     private Contract.Presenter presenter; // Presenter와 통신하기 위한 객체 생성
 
-    Thread timeThread = null;
     boolean isRunning = true;
     int mainButtonCount = 0;
     int i = 0; // 스레드 관련 변수
@@ -44,6 +47,13 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
 
         presenter = new MainPresenter(this);
         init();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "액티비티가 종료됨. ");
+
     }
 
     public void init(){
@@ -106,10 +116,6 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         subBtn.setVisibility(View.VISIBLE);
         subBtn.setText("기록");
         mainBtn.setText("일시정지");
-
-        // 스레드를 생성해서 실행함
-        timeThread = new Thread(new TimeThread());
-        timeThread.start();
 
         Intent intent = new Intent(MainActivity.this, MyService.class);
         startService(intent);
