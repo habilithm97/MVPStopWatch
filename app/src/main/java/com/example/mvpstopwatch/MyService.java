@@ -28,8 +28,7 @@ public class MyService extends Service {
     boolean isRunning = true;
     int i = 0; // 스레드 관련 변수
 
-    BackgroundTask task;
-    String result;
+    //BackgroundTask task;
 
     public MyService() {
     }
@@ -42,8 +41,10 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        task = new BackgroundTask();
-        task.execute();
+        //ask = new BackgroundTask();
+        //task.execute();
+        Thread timeThread = new Thread(new TimeThread());
+        timeThread.start();
         initNotification(); // 포그라운드 생성
         return START_NOT_STICKY;
     }
@@ -77,6 +78,38 @@ public class MyService extends Service {
         startForeground(1, notification); // 생성한 Notification 객체로 포그라운드 서비스 실행
     }
 
+    private class TimeThread implements Runnable {
+        private Handler handler = new Handler();
+
+        @Override
+        public void run() {
+            while(isRunning) {
+                Message msg = new Message();
+                msg.arg1 = i++;
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int mSec = msg.arg1 % 100;
+                        int sec = (msg.arg1 / 100) % 60;
+                        int min = (msg.arg1 / 100) / 60 % 60;
+                        int hour = (msg.arg1 / 100) / 3600 % 24;
+
+                        String result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
+                        Log.d(TAG, result);
+                        MainActivity.timeTv.setText(result);
+                    }
+                });
+
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    /*
     class BackgroundTask extends AsyncTask<Integer, String, Integer> {
 
         @Override
@@ -99,16 +132,22 @@ public class MyService extends Service {
                     e.printStackTrace();
                 }
             }
-            return i;
+            return i; // onPostExecute()로 전달함
         }
-    }
+
+        @Override // doInBackground() 메서드가 종료된 후 호출됨 -> 리턴값을 전달 받음 (작업에 대한 종료 시 처리할 것이 있다면 여기서 처리함)
+        protected void onPostExecute(Integer integer) {
+            super.onPostExecute(integer);
+
+            MainActivity.timeTv.setText(result);
+        }
+    } */
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        task.cancel(true); // 태스크 종료
-
+        //task.cancel(true); // 태스크 종료
     }
 
     @Override
