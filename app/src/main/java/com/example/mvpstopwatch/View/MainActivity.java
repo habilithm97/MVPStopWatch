@@ -36,9 +36,10 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     ScrollView scrollView;
 
     private Contract.Presenter presenter; // Presenter와 통신하기 위한 객체 생성
-    public static boolean isRunning = true;
+    public static boolean isRunning = false;
     int mainButtonCount = 0;
     int num = 0; // 기록 번호 관련 변수
+    //int num2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,7 +151,9 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     protected void saveRecord() {
         SharedPreferences sharedPreferences = getSharedPreferences("pref", Activity.MODE_PRIVATE); // "pref"는 저장소 이름
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("record", recordsTv.getText().toString()); // 저장하려는 데이터 설정
+        // 저장하려는 데이터 설정
+        editor.putString("record", recordsTv.getText().toString());
+        editor.putInt("num", num);
         editor.commit(); // 실제로 저장함
     }
 
@@ -159,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         if((sharedPreferences != null) && (sharedPreferences.contains("record"))) {
             String record = sharedPreferences.getString("record", "");
             recordsTv.setText(record);
+            num = sharedPreferences.getInt("num", 1);
         }
     }
 
@@ -174,5 +178,18 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         super.onResume();
 
         restoreRecord();
+
+        if(isRunning == true) {
+            mainBtn.setText("일시정지");
+            subBtn.setVisibility(View.VISIBLE);
+        } else {
+            mainBtn.setText("시작");
+            subBtn.setVisibility(View.GONE);
+        }
     }
 }
+
+/*
+1. 시간이 기록된 상태에서 앱을 종료하고 다시 실행하면 기록 카운트가 다시 1부터 시작하는 버그
+2. 알림에 스레드 표시
+ */
