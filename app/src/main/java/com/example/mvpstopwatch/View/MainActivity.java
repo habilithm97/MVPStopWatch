@@ -34,10 +34,8 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     ScrollView scrollView;
 
     private Contract.Presenter presenter; // Presenter와 통신하기 위한 객체 생성
-
-    boolean isRunning = true;
+    public static boolean isRunning = true;
     int mainButtonCount = 0;
-    int i = 0; // 스레드 관련 변수
     int num = 0; // 기록 번호 관련 변수
 
     @Override
@@ -119,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
 
         Intent intent = new Intent(MainActivity.this, MyService.class);
         startService(intent);
+
         isRunning = true; // 실행중인가? -> Yes
         mainButtonCount++; // 버튼을 누른 상태 1
     }
@@ -139,40 +138,10 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     }
 
     public void clearTime() {
-        i = 0;
+        MyService.i = 0;
         timeTv.setText("00:00:00.00");
         subBtn.setVisibility(View.GONE);
         mainBtn.setText("시작");
         recordsTv.setText(null);
-    }
-
-    // 핸들러를 이용해서 UI를 변경할 수 있음
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            int mSec = msg.arg1 % 100;
-            int sec = (msg.arg1 / 100) % 60;
-            int min = (msg.arg1 / 100) / 60 % 60;
-            int hour = (msg.arg1 / 100) / 3600 % 24;
-
-            String result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
-            timeTv.setText(result);
-        }
-    };
-
-    public class TimeThread implements Runnable {
-        @Override
-        public void run() {
-            while(isRunning) { // 실행중인 상태
-                Message msg = new Message();
-                msg.arg1 = i++;
-                handler.sendMessage(msg);
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }

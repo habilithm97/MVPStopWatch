@@ -25,10 +25,11 @@ import com.example.mvpstopwatch.View.MainActivity;
 public class MyService extends Service {
     private static final String TAG = "MyService";
 
-    boolean isRunning = true;
-    int i = 0; // 스레드 관련 변수
+
+    public static int i = 0; // 스레드 관련 변수
 
     //BackgroundTask task;
+    String result;
 
     public MyService() {
     }
@@ -83,7 +84,7 @@ public class MyService extends Service {
 
         @Override
         public void run() {
-            while(isRunning) {
+            while(MainActivity.isRunning) {
                 Message msg = new Message();
                 msg.arg1 = i++;
 
@@ -95,7 +96,7 @@ public class MyService extends Service {
                         int min = (msg.arg1 / 100) / 60 % 60;
                         int hour = (msg.arg1 / 100) / 3600 % 24;
 
-                        String result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
+                        result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
                         Log.d(TAG, result);
                         MainActivity.timeTv.setText(result);
                     }
