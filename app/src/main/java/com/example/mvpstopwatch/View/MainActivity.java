@@ -3,9 +3,11 @@ package com.example.mvpstopwatch.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -143,5 +145,34 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         subBtn.setVisibility(View.GONE);
         mainBtn.setText("시작");
         recordsTv.setText(null);
+    }
+
+    protected void saveRecord() {
+        SharedPreferences sharedPreferences = getSharedPreferences("pref", Activity.MODE_PRIVATE); // "pref"는 저장소 이름
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("record", recordsTv.getText().toString()); // 저장하려는 데이터 설정
+        editor.commit(); // 실제로 저장함
+    }
+
+    protected void restoreRecord() {
+        SharedPreferences sharedPreferences = getSharedPreferences("pref", Activity.MODE_PRIVATE);
+        if((sharedPreferences != null) && (sharedPreferences.contains("record"))) {
+            String record = sharedPreferences.getString("record", "");
+            recordsTv.setText(record);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        saveRecord();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        restoreRecord();
     }
 }
