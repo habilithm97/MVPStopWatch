@@ -1,6 +1,5 @@
 package com.example.mvpstopwatch.View;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -39,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     public static boolean isRunning = false;
     int mainButtonCount = 0;
     int num = 0; // 기록 번호 관련 변수
-    //int num2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "액티비티가 종료됨. ");
-
     }
 
     public void init(){

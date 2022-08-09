@@ -25,14 +25,11 @@ import com.example.mvpstopwatch.View.MainActivity;
 public class MyService extends Service {
     private static final String TAG = "MyService";
 
-
     public static int i = 0; // 스레드 관련 변수
 
-    //BackgroundTask task;
     String result;
 
-    public MyService() {
-    }
+    public MyService() {}
 
     @Override
     public void onCreate() {
@@ -42,8 +39,6 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //ask = new BackgroundTask();
-        //task.execute();
         Thread timeThread = new Thread(new TimeThread());
         timeThread.start();
         initNotification(); // 포그라운드 생성
@@ -55,9 +50,9 @@ public class MyService extends Service {
         builder.setSmallIcon(R.drawable.timer);
 
         NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
-        style.bigText("여기에 시간이 표시됩니다. ");
+        style.bigText("스톱워치가 실행중입니다.  ");
         style.setBigContentTitle(null);
-        style.setSummaryText("실행중");
+        //style.setSummaryText("실행중");
 
         builder.setContentText(null);
         builder.setContentTitle(null);
@@ -67,8 +62,10 @@ public class MyService extends Service {
         builder.setShowWhen(false);
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         // 자신이 아닌 다른 컴포넌트들이 PendingIntent를 사용하여 다른 컴포넌트에게 작업을 요청시키는 데 사용됨
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE |
+                PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -109,46 +106,6 @@ public class MyService extends Service {
                 }
             }
         }
-    }
-    /*
-    class BackgroundTask extends AsyncTask<Integer, String, Integer> {
-
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            while(isRunning) {
-                Message msg = new Message();
-                msg.arg1 = i++;
-
-                int mSec = msg.arg1 % 100;
-                int sec = (msg.arg1 / 100) % 60;
-                int min = (msg.arg1 / 100) / 60 % 60;
-                int hour = (msg.arg1 / 100) / 3600 % 24;
-
-                result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
-                Log.d(TAG, result);
-
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return i; // onPostExecute()로 전달함
-        }
-
-        @Override // doInBackground() 메서드가 종료된 후 호출됨 -> 리턴값을 전달 받음 (작업에 대한 종료 시 처리할 것이 있다면 여기서 처리함)
-        protected void onPostExecute(Integer integer) {
-            super.onPostExecute(integer);
-
-            MainActivity.timeTv.setText(result);
-        }
-    } */
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        //task.cancel(true); // 태스크 종료
     }
 
     @Override
