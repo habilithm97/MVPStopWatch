@@ -146,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         subBtn.setVisibility(View.GONE);
         mainBtn.setText("시작");
         recordsTv.setText(null);
+
+        num = 0; // 0으로 초기화하지 않으면 기록 초기화 버튼을 눌러도 저장된 num 값부터 기록됨
     }
 
     protected void saveRecord() {
@@ -154,6 +156,9 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         // 저장하려는 데이터 설정
         editor.putString("record", recordsTv.getText().toString());
         editor.putInt("num", num);
+        if(!timeTv.getText().toString().equals("00:00:00.00")) {
+            editor.putString("time", timeTv.getText().toString());
+        }
         editor.commit(); // 실제로 저장함
     }
 
@@ -163,6 +168,8 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
             String record = sharedPreferences.getString("record", "");
             recordsTv.setText(record);
             num = sharedPreferences.getInt("num", 1);
+            String time = sharedPreferences.getString("time", "");
+            timeTv.setText(time);
         }
     }
 
@@ -185,11 +192,17 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         } else {
             mainBtn.setText("시작");
             subBtn.setVisibility(View.GONE);
+
+            if(!timeTv.getText().toString().equals("00:00:00.00")) {
+                mainBtn.setText("계속");
+                subBtn.setVisibility(View.VISIBLE);
+                subBtn.setText("초기화");
+            }
         }
     }
 }
 
 /*
-1. 시간이 기록된 상태에서 앱을 종료하고 다시 실행하면 기록 카운트가 다시 1부터 시작하는 버그
-2. 알림에 스레드 표시
+-알림에 스레드 표시
+-시간이 일시정지된 상태에서 앱 종료 후 재실행 시 일시정지된 ui 그대로 표시
  */
