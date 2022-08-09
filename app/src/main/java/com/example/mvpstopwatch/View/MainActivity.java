@@ -156,9 +156,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         // 저장하려는 데이터 설정
         editor.putString("record", recordsTv.getText().toString());
         editor.putInt("num", num);
-        if(!timeTv.getText().toString().equals("00:00:00.00")) {
-            editor.putString("time", timeTv.getText().toString());
-        }
+        editor.putString("time", timeTv.getText().toString());
         editor.commit(); // 실제로 저장함
     }
 
@@ -204,5 +202,5 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
 
 /*
 -알림에 스레드 표시
--시간이 일시정지된 상태에서 앱 종료 후 재실행 시 일시정지된 ui 그대로 표시
+-
  */
