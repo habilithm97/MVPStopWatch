@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mvpstopwatch.MyService;
 import com.example.mvpstopwatch.Presenter.Contract;
@@ -27,30 +28,26 @@ import org.w3c.dom.Text;
 
 //View
 public class MainActivity extends AppCompatActivity implements Contract.View {
-    private static final String TAG = "MainActivity";
 
     public static TextView timeTv;
     TextView recordsTv;
     Button subBtn, mainBtn;
     ScrollView scrollView;
 
-    private Contract.Presenter presenter; // Presenter와 통신하기 위한 객체 생성
+    private Contract.Presenter presenter;
     public static boolean isRunning = false;
     int mainButtonCount = 0;
     int num = 0; // 기록 번호 관련 변수
+
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        presenter = new MainPresenter(this);
+        presenter = new MainPresenter(this); // Presenter와 통신하기 위한 객체 생성
         init();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     public void init(){
@@ -76,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     }
 
     @Override
-    public void mainResult() {
+    public void mainResult() { // 메인 버튼 액션
         if(mainButtonCount == 0) {
             startTimer();
         } else {
@@ -85,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     }
 
     @Override
-    public void subResult() {
+    public void subResult() { // 서브 버튼 액션
         if (subBtn.getText().toString().equals("기록")) {
             recordingTime();
         } else if (subBtn.getText().toString().equals("초기화")) {
@@ -114,11 +111,11 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         subBtn.setText("기록");
         mainBtn.setText("일시정지");
 
-        Intent intent = new Intent(MainActivity.this, MyService.class);
-        startService(intent);
-
         isRunning = true; // 실행중인가? -> Yes
         mainButtonCount++; // 버튼을 누른 상태 1
+
+        intent = new Intent(MainActivity.this, MyService.class);
+        startService(intent);
     }
 
     public void PauseAndRestartTimer() {
@@ -144,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         recordsTv.setText(null);
 
         num = 0; // 0으로 초기화하지 않으면 기록 초기화 버튼을 눌러도 저장된 num 값부터 기록됨
+
+        intent = new Intent(MainActivity.this, MyService.class);
+        stopService(intent);
     }
 
     protected void saveRecord() {
@@ -195,8 +195,3 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         }
     }
 }
-
-/*
--알림에 스레드 표시
--
- */

@@ -28,6 +28,7 @@ public class MyService extends Service {
     public static int i = 0; // 스레드 관련 변수
 
     String result;
+    public static NotificationManager manager;
 
     public MyService() {}
 
@@ -41,7 +42,9 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Thread timeThread = new Thread(new TimeThread());
         timeThread.start();
-        initNotification(); // 포그라운드 생성
+
+        initNotification(); // 알림 객체를 통한 포그라운드 서비스 실행
+
         return START_NOT_STICKY;
     }
 
@@ -50,7 +53,7 @@ public class MyService extends Service {
         builder.setSmallIcon(R.drawable.timer);
 
         NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
-        style.bigText("스톱워치가 실행중입니다.  ");
+        style.bigText("스톱워치가 실행중입니다. ");
         style.setBigContentTitle(null);
         //style.setSummaryText("실행중");
 
@@ -68,7 +71,7 @@ public class MyService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
 
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 오레오 버전 이상 Notification 알림 설정
             manager.createNotificationChannel(new NotificationChannel("1", "포그라운드 서비스", NotificationManager.IMPORTANCE_NONE));
         }
@@ -113,3 +116,7 @@ public class MyService extends Service {
         return null;
     }
 }
+
+/*
+-스레드가 일시정지된 상태면 알림 끄기(manager.cancel(1))
+ */
