@@ -35,11 +35,11 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
     ScrollView scrollView;
 
     private Contract.Presenter presenter;
-    public static boolean isRunning = false;
+    public static boolean isRunning = false; // 스레드 실행 상태(디폴트 false)
     int mainButtonCount = 0;
     int num = 0; // 기록 번호 관련 변수
 
-    Intent intent;
+    Intent serviceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         if(mainButtonCount == 0) {
             startTimer();
         } else {
-            PauseAndRestartTimer();
+            pauseTimer();
        }
     }
 
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         } else if (subBtn.getText().toString().equals("초기화")) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("초기화");
-            builder.setMessage("시간을 초기화하시겠습니까?");
+            builder.setMessage("스톱워치를 초기화하시겠습니까?");
             builder.setIcon(R.drawable.timer);
             builder.setPositiveButton("초기화", new DialogInterface.OnClickListener() {
                 @Override
@@ -111,18 +111,18 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         subBtn.setText("기록");
         mainBtn.setText("일시정지");
 
-        isRunning = true; // 실행중인가? -> Yes
+        isRunning = true; // 실행중
         mainButtonCount++; // 버튼을 누른 상태 1
 
-        intent = new Intent(MainActivity.this, MyService.class);
-        startService(intent);
+        serviceIntent = new Intent(MainActivity.this, MyService.class);
+        startService(serviceIntent);
     }
 
-    public void PauseAndRestartTimer() {
+    public void pauseTimer() {
         subBtn.setText("초기화");
         mainBtn.setText("계속");
 
-        isRunning = !isRunning; // 스레드를 멈춤
+        isRunning = !isRunning; // 스레드 일시정지
         mainButtonCount--; // 버튼을 누르지 않은 상태 0
     }
 
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
         String currentTime = timeTv.getText().toString();
         num++;
         recordsTv.append(num + ") " + currentTime + "\n");
-        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+        scrollView.fullScroll(ScrollView.FOCUS_DOWN); // 맨 아래로 자동 스크롤
     }
 
     public void clearTime() {
@@ -142,23 +142,25 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
 
         num = 0; // 0으로 초기화하지 않으면 기록 초기화 버튼을 눌러도 저장된 num 값부터 기록됨
 
-        intent = new Intent(MainActivity.this, MyService.class);
-        stopService(intent);
+        // 초기화 시 서비스 종료
+        serviceIntent = new Intent(MainActivity.this, MyService.class);
+        stopService(serviceIntent);
     }
 
     protected void saveRecord() {
         SharedPreferences sharedPreferences = getSharedPreferences("pref", Activity.MODE_PRIVATE); // "pref"는 저장소 이름
         SharedPreferences.Editor editor = sharedPreferences.edit();
         // 저장하려는 데이터 설정
-        editor.putString("record", recordsTv.getText().toString());
-        editor.putInt("num", num);
-        editor.putString("time", timeTv.getText().toString());
+        editor.putString("record", recordsTv.getText().toString()); // 기록한 시간
+        editor.putInt("num", num); // 기록한 시간의 순번
+        editor.putString("time", timeTv.getText().toString()); // 현재 시간(일시정지한 시간)
         editor.commit(); // 실제로 저장함
     }
 
     protected void restoreRecord() {
         SharedPreferences sharedPreferences = getSharedPreferences("pref", Activity.MODE_PRIVATE);
-        if((sharedPreferences != null) && (sharedPreferences.contains("record"))) {
+        if((sharedPreferences != null) && (sharedPreferences.contains("record")) &&
+                (sharedPreferences.contains("num")) && (sharedPreferences.contains("time"))) {
             String record = sharedPreferences.getString("record", "");
             recordsTv.setText(record);
             num = sharedPreferences.getInt("num", 1);
@@ -180,13 +182,16 @@ public class MainActivity extends AppCompatActivity implements Contract.View {
 
         restoreRecord();
 
-        if(isRunning == true) {
+        // 복구했는데
+        if(isRunning == true) { // 실행중이면
             mainBtn.setText("일시정지");
             subBtn.setVisibility(View.VISIBLE);
-        } else {
+        } else { // 실행중이 아니면
+            // 초기 상태
             mainBtn.setText("시작");
             subBtn.setVisibility(View.GONE);
 
+            // 실행중은 아니지만 초기 상태도 아닐 경우(일시정지 상태)
             if(!timeTv.getText().toString().equals("00:00:00.00")) {
                 mainBtn.setText("계속");
                 subBtn.setVisibility(View.VISIBLE);

@@ -25,27 +25,18 @@ import com.example.mvpstopwatch.View.MainActivity;
 public class MyService extends Service {
     private static final String TAG = "MyService";
 
-    public static int i = 0; // 스레드 관련 변수
-
-    String result;
-    public static NotificationManager manager;
+    public static int i = 0; // 스레드 값
 
     public MyService() {}
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.d(TAG, "onCreate() 호출됨. ");
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Thread timeThread = new Thread(new TimeThread());
         timeThread.start();
 
-        initNotification(); // 알림 객체를 통한 포그라운드 서비스 실행
+        initNotification(); // 알림 객체를 통한 포그라운드 서비스 실행(액티비티가 onDestroy()되어도 알림을 통해 실행 유지됨)
 
-        return START_NOT_STICKY;
+        return START_NOT_STICKY; // 시스템에 의해 강제 종료되더라도 서비스가 재시작되지 않음
     }
 
     public void initNotification() {
@@ -53,16 +44,16 @@ public class MyService extends Service {
         builder.setSmallIcon(R.drawable.timer);
 
         NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
-        style.bigText("스톱워치가 실행중입니다. ");
-        style.setBigContentTitle(null);
-        //style.setSummaryText("실행중");
+        style.setSummaryText("실행중"); // 앱 이름 우측의 텍스트
+        style.setBigContentTitle(null); // 제목
+        style.bigText("스톱워치가 실행중입니다. "); // 내용
 
-        builder.setContentText(null);
-        builder.setContentTitle(null);
-        builder.setOngoing(true);
+        builder.setContentTitle(null); // 제목
+        builder.setContentText(null); // 내용
+        builder.setOngoing(true); // 사용자가 알림을 지우지 못하도록 유지
         builder.setStyle(style);
-        builder.setWhen(0);
-        builder.setShowWhen(false);
+        builder.setWhen(0); // 알람 시간(miliSecond 단위로 넣어주면 내부적으로 자동 파싱함)
+        builder.setShowWhen(false); // setWhen()을 감춤
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -71,7 +62,7 @@ public class MyService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
 
-        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 오레오 버전 이상 Notification 알림 설정
             manager.createNotificationChannel(new NotificationChannel("1", "포그라운드 서비스", NotificationManager.IMPORTANCE_NONE));
         }
@@ -96,12 +87,11 @@ public class MyService extends Service {
                         int min = (msg.arg1 / 100) / 60 % 60;
                         int hour = (msg.arg1 / 100) / 3600 % 24;
 
-                        result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
+                        String result = String.format("%02d:%02d:%02d.%02d", hour, min, sec, mSec);
                         Log.d(TAG, result);
                         MainActivity.timeTv.setText(result);
                     }
                 });
-
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -116,7 +106,3 @@ public class MyService extends Service {
         return null;
     }
 }
-
-/*
--스레드가 일시정지된 상태면 알림 끄기(manager.cancel(1))
- */
